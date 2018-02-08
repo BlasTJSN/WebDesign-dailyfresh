@@ -16,6 +16,11 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+# 为了配合djanjo用户认证系统模型类的使用，需要增加导包路径
+import sys
+
+sys.path.insert(1, os.path.join(BASE_DIR,"apps"))
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
@@ -32,17 +37,24 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = (
     'django.contrib.admin',
+    # django用户认证系统的应用，默认使用
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # django的用户认证系统规定，在注册应用时，应用的名称需要跟AUTH_USER_MODEL = "users.User"里面的users保持一致
+    "users",
+    "goods",
+    "orders",
+    "cart",
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    # 默认开启了用户认证的验证系统
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -55,7 +67,7 @@ ROOT_URLCONF = 'dailyfresh.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,"temp;ates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,8 +88,12 @@ WSGI_APPLICATION = 'dailyfresh.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': "dailyfresh",
+        "HOST": "192.168.43.144",
+        "PORT": "3306",
+        "USER": "root",
+        "PASSWORD": "mysql",
     }
 }
 
@@ -99,4 +115,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+# 配置静态文件加载路径
 STATIC_URL = '/static/'
+STATICFIELS_DIRS = [
+    os.path.join(BASE_DIR,"static")
+]
+
+# 配置django用户认证系统的模型类，将AbstractUser更换成User
+# 说明：django的用户认证系统，只允许一级导包，只能有一个"."
+
+AUTH_USER_MODEL = "users.User"
