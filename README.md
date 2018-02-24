@@ -62,6 +62,9 @@ send_active_email()：内部封装激活邮件内容，并用装饰器@app.task�
 11.3.3将redis数据库作为中间人borker
 11.4实现激活逻辑
 
+12.实现登陆逻辑
+
+
 
 
 

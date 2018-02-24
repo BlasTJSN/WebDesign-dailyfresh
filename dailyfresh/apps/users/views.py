@@ -9,9 +9,49 @@ from celery_tasks.tasks import send_active_email
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from django.conf import settings
 from itsdangerous import SignatureExpired
+from django.contrib.auth import authenticate, login, logout
 
 
 # Create your views here.
+
+class LoginView(View):
+    """登陆"""
+
+    def get(self,request):
+        """响应登陆页面"""
+        return render(request, "login.html")
+
+    def post(self,request):
+        """处理登陆逻辑"""
+
+        # 获取用户名和密码
+        user_name = request.POST.get("username")
+        password = request.POST.get("pwd")
+
+        # 参数校验
+        if not all([user_name, password]):
+            return redirect(reverse("users:login"))
+
+        # Django用户认证系统判断是否登陆成功
+        user = authenticate(user_name=user_name,password=password)
+
+        # 验证登陆失败
+        if user is None:
+            # 响应登陆页面，提示用户名或密码错误
+            return render(request, "login.html", {"errmsg":"用户名或密码错误"})
+
+        # 验证登陆成功，判断用户是否激活
+        if user.is_active is False:
+            # 如果不是激活用户
+            return render(request, "login.html", {"errmsg":"用户未激活"})
+
+        # 使用django用户认证系统，在session中保存用户登陆状态
+        login(request, user)
+
+        # 登陆成功，重定向到主页
+        return redirect(reverse("goods:index"))
+
+
 
 class ActiveView(View):
     """邮件激活"""

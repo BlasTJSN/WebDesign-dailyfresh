@@ -1,6 +1,6 @@
 from django.db import models
 from utils.models import BaseModel
-# from tinymce.models import HTMLField
+from tinymce.models import HTMLField
 
 # Create your models here.
 
