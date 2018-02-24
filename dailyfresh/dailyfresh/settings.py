@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# 为了配合djanjo用户认证系统模型类的使用，需要增加导包路径
+# 为了配合django用户认证系统模型类的使用，需要增加导包路径
 import sys
 
 sys.path.insert(1, os.path.join(BASE_DIR,"apps"))
@@ -67,7 +67,7 @@ ROOT_URLCONF = 'dailyfresh.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,"temp;ates")],
+        'DIRS': [os.path.join(BASE_DIR,"templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,7 +90,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': "dailyfresh",
-        "HOST": "192.168.43.144",
+        "HOST": "192.168.90.39",  # MySQL数据库地址
         "PORT": "3306",
         "USER": "root",
         "PASSWORD": "mysql",
