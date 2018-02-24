@@ -133,3 +133,22 @@ EMAIL_PORT = 587 # 发邮件端口
 EMAIL_HOST_USER = '3393133521@qq.com' # 授权的邮箱
 EMAIL_HOST_PASSWORD = 'ctsvjxbnixsadaaj' # 邮箱授权时获得的密码，非注册登录密码
 EMAIL_FROM = '天天生鲜<3393133521@qq.com>' # 发件人抬头
+
+
+# 缓存
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://192.168.90.39:6379/5",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+
+# Session
+# http://django-redis-chs.readthedocs.io/zh_CN/latest/#session-backend
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"

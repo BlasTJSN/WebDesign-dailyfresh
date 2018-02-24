@@ -27,6 +27,8 @@ class LoginView(View):
         # 获取用户名和密码
         user_name = request.POST.get("username")
         password = request.POST.get("pwd")
+        # 获取记住用户选项状态
+        remembered = request.POST.get("remembered")
 
         # 参数校验
         if not all([user_name, password]):
@@ -47,6 +49,15 @@ class LoginView(View):
 
         # 使用django用户认证系统，在session中保存用户登陆状态
         login(request, user)
+
+        # 判断是否勾选"记住用户名"
+        if remembered != "on":
+            # 没有勾选，不需要记住cookie信息，浏览会话结束后过期，时间设置为0
+            request.session.set_expiry(0)
+        else:
+            # 已购选，需要记住cookie信息,时间设置为None，默认为14天
+            request.session.set_expiry(None)
+
 
         # 登陆成功，重定向到主页
         return redirect(reverse("goods:index"))
