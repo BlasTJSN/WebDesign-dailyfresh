@@ -5,9 +5,51 @@ from django.core.urlresolvers import reverse
 import re
 from users.models import User
 from django.db import IntegrityError
+from celery_tasks.tasks import send_active_email
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from django.conf import settings
+from itsdangerous import SignatureExpired
 
 
 # Create your views here.
+
+class ActiveView(View):
+    """邮件激活"""
+    def get(self,request,token):
+        """处理激活请求"""
+
+        # 创建序列化器
+        serializer = Serializer(settings.SECRET_KEY, 3600)
+
+        # 使用序列化器将token还原
+        try:
+            # 使用序列化器，获取token明文信息，需要判断签名是否过期
+            result = serializer.loads(token)
+
+        except SignatureExpired:
+            # 提示激活链接已过期
+            return HttpResponse("激活链接已过期")
+
+        # 获取用户id
+        user_id = result.get("confirm")
+
+        # 通过用户id查询需要激活的用户，需要判断查询的用户是否存在
+        try:
+            user = User.objects.get(id=user_id)
+
+        except User.DoesNotExist:
+            # 提示用户不存在
+            return HttpResponse("用户不存在")
+
+        # 设置激活用户的is_active为True
+        user.is_active = True
+
+        # 保存数据到数据库
+        user.save()
+
+        # 响应信息给客户端：跳转到登陆页面
+        return  redirect(reverse("user:login"))
+
 
 # 类视图的使用
 class RegisterView(View):
@@ -48,5 +90,11 @@ class RegisterView(View):
         # 保存数据到数据库
         user.save()
 
+        # 生成激活token
+        token = user.generate_active_token()
 
-        return HttpResponse("这里实现注册逻辑")
+        # celery发送激活邮件：异步完成，发送邮件不会阻塞结果的返回
+        send_active_email.delay(email, user_name, token)
+
+        # 返回结果：重定向的首页
+        return redirect(reverse('goods:index'))
