@@ -14,6 +14,22 @@ from django.contrib.auth import authenticate, login, logout
 
 # Create your views here.
 
+class LogoutView(View):
+    """退出登陆"""
+
+    def get(self,request):
+        """处理退出登陆逻辑"""
+
+        # 由Django用户认证系统完成，需要清理cookie和session,request参数中有user对象
+        logout(request)
+
+        # 退出后跳转
+        return redirect(reverse("user:login"))
+
+
+
+
+
 class LoginView(View):
     """登陆"""
 
