@@ -90,7 +90,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': "dailyfresh",
-        "HOST": "192.168.90.39",  # MySQL数据库地址
+        "HOST": "localhost",  # MySQL数据库地址
         "PORT": "3306",
         "USER": "root",
         "PASSWORD": "mysql",
@@ -152,3 +152,7 @@ CACHES = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+
+# 限制用户访问的重定向的地址：login_required装饰器需要用到的
+LOGIN_URL = '/users/login'

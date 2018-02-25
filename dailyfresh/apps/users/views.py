@@ -10,9 +10,24 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from django.conf import settings
 from itsdangerous import SignatureExpired
 from django.contrib.auth import authenticate, login, logout
+from utils.views import LoginRequiredMixin
 
 
 # Create your views here.
+
+
+class AddressView(LoginRequiredMixin,View):
+    """用户地址"""
+
+    def get(selfself,request):
+        """提供用户地址页面"""
+        return render(request, "user_center_site.html")
+
+    def post(self,request):
+        """修改地址信息"""
+        pass
+
+
 
 class LogoutView(View):
     """退出登陆"""
