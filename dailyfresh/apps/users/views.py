@@ -12,9 +12,49 @@ from itsdangerous import SignatureExpired
 from django.contrib.auth import authenticate, login, logout
 from utils.views import LoginRequiredMixin
 from users.models import Address
+from django_redis import get_redis_connection
+from goods.models import GoodsSKU
+
 
 
 # Create your views here.
+
+class UserInfoView(LoginRequiredMixin, View):
+    """个人信息"""
+
+    def get(self, request):
+        """查询个人基本信息和最近的浏览记录，并渲染模板"""
+
+        user = request.user
+        try:
+            address = user.address_set.latest("create_time")
+        except Address.DoesNotExist:
+            address = None
+
+
+        # 查询浏览记录，从redis中查询处浏览记录信息，以history_userid的形式存储在redis中
+        # 创建redis连接对象
+        redis_conn = get_redis_connection("default")
+        # 查询出需要展示的浏览记录数据,前五个数据
+        sku_ids = redis_conn.lrange("history_%s" % user.id, 0, 4)
+        # 记录sku模型对象的列表
+        sku_list = []
+        # 遍历sku_ids,取出sku_id
+        for sku_id in sku_ids:
+            # 使用sku_id查询GoodsSKU
+            sku = GoodsSKU.objects.get(id=sku_id)
+            sku_list.append(sku)
+        # 因为从redis中取数据的顺序和存数据相反，所以要新建一个列表把取出的数据添加进去，保证与存入的顺序即浏览顺序一致
+
+
+        context = {
+            "address":address,
+            "sku_list":sku_list
+        }
+
+        return render(request,"user_center_info.html", context)
+
+
 
 
 class AddressView(LoginRequiredMixin,View):
