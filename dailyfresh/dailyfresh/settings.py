@@ -117,7 +117,7 @@ USE_TZ = True
 
 # 配置静态文件加载路径
 STATIC_URL = '/static/'
-STATICFIELS_DIRS = [
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR,"static")
 ]
 

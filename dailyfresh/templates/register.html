@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 
-    {% load staticfiles %}
+    {% load static %}
 
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<title>天天生鲜-注册</title>
@@ -55,6 +55,7 @@
 						<label>同意”天天生鲜用户使用协议“</label>
 						<span class="error_tip2">提示信息</span>
 					</li>
+					<div>{{ errmsg }}</div>
 					<li class="reg_sub">
 						<input type="submit" value="注 册" name="">
 					</li>

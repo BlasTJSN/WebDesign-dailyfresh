@@ -11,22 +11,60 @@ from django.conf import settings
 from itsdangerous import SignatureExpired
 from django.contrib.auth import authenticate, login, logout
 from utils.views import LoginRequiredMixin
+from users.models import Address
 
 
 # Create your views here.
 
 
 class AddressView(LoginRequiredMixin,View):
-    """用户地址"""
+    """收货地址"""
 
     def get(selfself,request):
-        """提供用户地址页面"""
-        return render(request, "user_center_site.html")
+        """提供用户地址页面:如果验证失败重定向到登陆页面"""
+
+        # 从request中获取user对象,Django用户认证系统中间件中，会在请求中验证用户，用户登陆了，request就会获得user对象
+        user = request.user
+
+        try:
+            # 查询用户地址：根据创建时间排序，最近的时间在最前，取第1个地址
+            # user对象在过滤器中默认等于它的主键，即id
+            # address = Address.object.filter(user=user).order_by("-create_time")[0]
+            # user和address是一对多的关系，可以使用基础管理查询
+            # address = user.address_set.order_by("-create_time")[0]
+            # 使用latest("时间")函数,按时间排序，默认倒序,取第一个值
+            address = user.address_set.latest("create_time")
+        except Address.DoesNotExit:
+            # 如果地址信息不存在
+            address = None
+
+        # 构造上下文
+        context = {
+                "address":address
+            }
+        return render(request, "user_center_site.html", context)
 
     def post(self,request):
-        """修改地址信息"""
-        pass
+        """编辑地址"""
 
+        # 接收地址表单数据
+        user = request.user
+        recv_name = request.POST.get("recv_name")
+        addr = request.POST.get("addr")
+        zip_code = request.POST.get("zip_code")
+        recv_mobile = request.POST.get("recv_mobile")
+
+        # 校验参数，这里只做空校验
+        if all([user, recv_name, addr, zip_code, recv_mobile]):
+            # 保存地址信息到数据库
+            Address.object.create(
+                user=user,
+                receiver_name=recv_name,
+                detail_addr=addr,
+                zip_code=zip_code,
+                receiver_mobile=recv_mobile
+            )
+        return redirect(reverse("users:address"))
 
 
 class LogoutView(View):
@@ -89,11 +127,14 @@ class LoginView(View):
             # 已购选，需要记住cookie信息,时间设置为None，默认为14天
             request.session.set_expiry(None)
 
-
-        # 登陆成功，重定向到主页
-        return redirect(reverse("goods:index"))
-
-
+        # next的作用
+        # 登陆成功，根据next的参数决定跳转方向
+        next = request.GET.get("next")
+        if next is None:
+            # 如果是直接登陆成功，重定向到首页
+            return redirect(reverse("goods:index"))
+        # 如果是从限制访问页面重定向到登陆页面的，跳转回限制访问页面
+        return redirect(next)
 
 class ActiveView(View):
     """邮件激活"""
@@ -180,3 +221,4 @@ class RegisterView(View):
 
         # 返回结果：重定向的首页
         return redirect(reverse('goods:index'))
+
