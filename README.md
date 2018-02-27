@@ -185,5 +185,37 @@ send_active_email()：内部封装激活邮件内容，并用装饰器@app.task�
 
 19.1 继承父模板重写收货地址，个人信息模板
 
+20.安装FastDFS服务器
 
+20.1使用FastDFS服务器存储图片数据。使用nginx读取FastDFS服务器的图片数据
+
+21完成Django对接FastDFS流程
+
+21.1整体流程
+21.1.1浏览器后台站点发布图片，向Django发出上传图片请求
+21.1.2Django得到上传图片请求信息，调用上传图片方法client.upload_by_buffer(file_data),调用fdfs客户端
+21.1.3fdfs客户端得到上传请求信息，传递请求信息到FastDFS服务器,通过client.conf传递到指定的服务器
+21.1.4tracker得到请求信息，查询可用的storage，再通过client.conf返回可用的storage的ip和端口到fdfs客户端
+21.1.5fdfs客户端把图片传给指定的storage
+21.1.6storage接收图片，将上传的图片写入服务器，同时生成存储位置的file_id，把status+file_id+文件名+Storage_IP返回给fdfs客户端
+21.1.7fdfs客户端判断是否上传成功，返回file_id到Django
+21.1.8Django把file_id存储到数据库
+21.1.9用户访问页面，向Django发出html请求，通过模板中的标签查询数据库中图片的file_id
+21.1.10使用nginx从服务器磁盘中读取图片数据，渲染html页面
+
+21.2安装fdfs_client,用于fdfs与Django的交互
+
+21.3实现自定义文件存储系统storage
+
+21.3.1建立自定义文件存储系统目录结构utils/fastdfs/client.conf,utils/fastdfs/storage.py
+
+21.3.2配置settings.py中Django自定义的存储系统
+
+21.3.3在storage.py中实现自定义存储系统类的代码逻辑
+
+21.4测试自定义文件存储系统后台站点上传图片
+21.4.1本地化
+21.4.2注册模型类到后台站点
+21.4.3创建超级管理员并登陆进入到后台站点
+21.4.4发布内容
 

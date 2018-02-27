@@ -101,9 +101,9 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-Hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -156,3 +156,11 @@ SESSION_CACHE_ALIAS = "default"
 
 # 限制用户访问的重定向的地址：login_required装饰器需要用到的
 LOGIN_URL = '/users/login'
+
+# 配置Django自定义的存储系统，指定文件存储到fdfs时，找哪个类来处理，这里是FastDFFSStorage类
+DEFAULT_FILE_STORAGE = 'utils.fastdfs.storage.FastDFSStorage'
+# 配置client.conf的路径
+CLIENT_CONF = os.path.join(BASE_DIR, "utils/fastdfs/client.conf")
+# 配置nginx的ip
+SERVER_IP = "http://192.168.64.128:8088/"
+
