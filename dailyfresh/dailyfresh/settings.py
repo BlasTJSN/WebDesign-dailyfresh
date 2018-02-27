@@ -43,6 +43,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "tinymce",
+
     # django的用户认证系统规定，在注册应用时，应用的名称需要跟AUTH_USER_MODEL = "users.User"里面的users保持一致
     "users",
     "goods",
@@ -164,3 +166,9 @@ CLIENT_CONF = os.path.join(BASE_DIR, "utils/fastdfs/client.conf")
 # 配置nginx的ip
 SERVER_IP = "http://192.168.64.128:8088/"
 
+# 配置富文本编辑器样式
+TINYMCE_DEFAULT_CONFIG = {
+  'theme': 'advanced', # 丰富样式
+  'width': 600,
+  'height': 400,
+}
