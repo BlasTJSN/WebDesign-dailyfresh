@@ -226,3 +226,17 @@ send_active_email()：内部封装激活邮件内容，并用装饰器@app.task�
 24.主页商品信息展示
 24.1定义主页类视图
 24.2渲染index.html模板
+
+25.页面静态化
+25.1celery生成静态html,在task.py中渲染模板static_index.html
+25.2配置nginx访问静态html,在/usr/local/nginx/conf中配置
+25.3模型管理类地啊用celery异步方法,在admin.py中封装BaseAdmin类
+
+26.动态主页html缓存
+26.1判断是否存在缓存，不存在就执行数据查询缓存
+26.2购物车是实时变化的不能被缓存
+26.3缓存需设置有效时间，才能让数据更新
+
+27.实现主页购物车，数量统计
+27.1购物车数据保存在redis中，使用hash格式cart_userid sku_id count
+

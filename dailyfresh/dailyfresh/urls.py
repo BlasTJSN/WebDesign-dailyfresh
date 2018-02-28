@@ -20,6 +20,12 @@ import tinymce.urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r"^users/", include("users.urls", namespace="users")),
+    # 富文本编辑器
     url(r"^tinymce/", include('tinymce.urls')),
+    # 用户模块  users/register
+    url(r"^users/", include("users.urls", namespace="users")),
+    # 商品模块 主页: http://127.0.0.1:8000/
+    url(r'^', include('goods.urls', namespace='goods'))
+
+
 ]
