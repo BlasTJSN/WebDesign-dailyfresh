@@ -4,8 +4,78 @@ from goods.models import GoodsCategory,Goods,IndexGoodsBanner,IndexCategoryGoods
 from django.core.cache import cache
 from django_redis import get_redis_connection
 from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator, EmptyPage
 
 # Create your views here.
+
+class ListView(View):
+    """商品分类列表"""
+
+    def get(self, request, category_id, page_num):
+        """根据用户要看的商品分类，和要看的页数，及排序规则，查询处用户要的数据，并渲染"""
+
+        # 读取排序规则，当用户不传入sort时，我们需要指定默认排序规则
+        sort = request.GET.get("sort", "default")
+
+        # 查询用户要看的商品分类
+        try:
+            category = GoodsCategory.objects.get(id=category_id)
+        except GoodsCategory.DoesNotExist:
+            return redirect(reverse("goods:index"))
+
+        # 查询全部商品分类
+        categorys = GoodsCategory.objects.all()
+
+        # 查询新品推荐
+        new_skus = GoodsSKU.objects.filter(category=category).order_by("-create_time")[:2]
+
+        # 查询所有category关联的sku，并完成排序
+        # 此处可优化
+        if sort == "price":
+            skus = GoodsSKU.objects.filter(category=category).order_by("price")
+        elif sort == "hot":
+            skus = GoodsSKU.objects.filter("-sales")
+        else:
+            skus = GoodsSKU.objects.filter(category=category)
+            # 重置sort,后面要使用,避免产生其他情况
+            sort = "default"
+
+        # 实现分页： 对skus分页，每页2个GoodsSKU模型对象
+        paginator = Paginator(skus, 2)
+
+        # 获取用户要看的那一页数据
+        page_num = int(page_num)
+        # 每页2个GoodsSKU模型对象
+        try:
+            page_skus = paginator.page(page_num)
+        except EmptyPage:
+            page_skus = paginator.page(1)
+
+        # 先获取页码列表信息，再传给模板
+        page_list = paginator.page_range
+
+        # 购物车
+        cart_num = 0
+        if request.user.is_authenticated():
+            redis_conn = get_redis_connection("default")
+            user_id = request.user.id
+            cart_dict = redis_conn.hgetall("cart_%s" % user_id)
+            for val in cart_dict.values():
+                cart_num += int(val)
+
+        # 构造上下文
+        context = {
+            "category": category,
+            "categorys": categorys,
+            "new_skus": new_skus,
+            "page_skus": page_skus,  #  只传入分页后的sku信息，减少传输量
+            "page_list":page_list,
+            "sort":sort
+            "cart_num":cart_num
+        }
+
+        # 渲染模板
+        return render(request, "list.html", context)
 
 class DetailView(View):
     """商品详细信息页面"""

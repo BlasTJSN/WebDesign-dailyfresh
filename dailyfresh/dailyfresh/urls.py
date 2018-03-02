@@ -25,7 +25,7 @@ urlpatterns = [
     # 用户模块  users/register
     url(r"^users/", include("users.urls", namespace="users")),
     # 商品模块 主页: http://127.0.0.1:8000/
-    url(r'^', include('goods.urls', namespace='goods'))
+    url(r'^', include('goods.urls', namespace='goods')),
 
 
 ]
