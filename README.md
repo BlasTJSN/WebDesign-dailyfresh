@@ -259,3 +259,5 @@ send_active_email()：内部封装激活邮件内容，并用装饰器@app.task�
 30.8编写search.html模板
 30.9 使用中文分词工具jieba
 
+31.购物车
+31.1定义添加购物车视图

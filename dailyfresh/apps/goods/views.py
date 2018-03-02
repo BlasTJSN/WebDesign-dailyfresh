@@ -70,7 +70,7 @@ class ListView(View):
             "new_skus": new_skus,
             "page_skus": page_skus,  #  只传入分页后的sku信息，减少传输量
             "page_list":page_list,
-            "sort":sort
+            "sort":sort,
             "cart_num":cart_num
         }
 
