@@ -1,5 +1,6 @@
 # dailyfresh
 天天生鲜电商项目
+
 1.创建dailyfresh项目
 
 
@@ -246,3 +247,15 @@ send_active_email()：内部封装激活邮件内容，并用装饰器@app.task�
 
 29.实现商品列表页面
 29.1查询商品分类信息，查询新品推荐信息，查询商品列表信息，查询商品分页信息，查询购物车信息
+
+30.全文检索
+30.1安装haystack应用
+30.2在settings.py文件中配置搜索引擎
+30.3在要索引的表的应用下创建search_indexes.py文件，定义商品索引类GoodsSKUIndex()，继承自indexes.SearchIndex和indexes.Indexable
+30.4在templates下新建目录search/indexes/goods,新建goodssku_text.txt，并编辑要建立索引的字段
+30.5 生成索引文件 python manage.py rebuild_index
+30.6搜索表单处理
+30.7配置搜索地址正则
+30.8编写search.html模板
+30.9 使用中文分词工具jieba
+

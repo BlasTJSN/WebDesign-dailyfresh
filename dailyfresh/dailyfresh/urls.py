@@ -16,12 +16,15 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 import tinymce.urls
+import haystack.urls
 
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     # 富文本编辑器
     url(r"^tinymce/", include('tinymce.urls')),
+    # haystack
+    url(r'^search/', include('haystack.urls')),
     # 用户模块  users/register
     url(r"^users/", include("users.urls", namespace="users")),
     # 商品模块 主页: http://127.0.0.1:8000/
