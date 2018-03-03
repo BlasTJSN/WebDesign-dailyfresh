@@ -14,6 +14,7 @@ from utils.views import LoginRequiredMixin
 from users.models import Address
 from django_redis import get_redis_connection
 from goods.models import GoodsSKU
+import json
 
 
 
@@ -167,14 +168,50 @@ class LoginView(View):
             # 已购选，需要记住cookie信息,时间设置为None，默认为14天
             request.session.set_expiry(None)
 
+        # 在界面跳转前，将cookie中的购物车数据添加到redis中
+        cart_json = request.COOKIES.get("cart")
+        if cart_json is not None:
+            cart_dict_cookie = json.loads(cart_json)
+        else:
+            cart_dict_cookie = {}
+
+        # 查询redis中的购物车数据
+        redis_conn = get_redis_connection("default")
+        cart_dict_redis = redis_conn.hgetall("cart_%s" % user.id)
+
+        # 遍历cookie中的购物车数据
+        for sku_id, count in cart_dict_cookie.items():
+            # 将string转换成bytes类型
+            sku_id = sku_id.encode()
+            # 判断cookie中的商品在redis中是否存在
+            if sku_id in cart_dict_redis:
+                origin_count = cart_dict_redis[sku_id]
+
+                count += int(origin_count)
+                # 此处是伪代码;大家需要知道如果登录和未登录进行合并后,会有库存的问题即可
+                # sku = GoodsSKU.objects.get(id=sku_id)
+                # if count > sku.stock:
+                #     return '提示用户'
+
+            # 将cookie中的购物车数据添加到redis中
+            cart_dict_redis[sku_id] = count
+        if cart_dict_redis:
+            redis_conn.hmset("cart_%s" % user.id, cart_dict_redis)
+
+
         # next的作用
         # 登陆成功，根据next的参数决定跳转方向
         next = request.GET.get("next")
         if next is None:
             # 如果是直接登陆成功，重定向到首页
-            return redirect(reverse("goods:index"))
-        # 如果是从限制访问页面重定向到登陆页面的，跳转回限制访问页面
-        return redirect(next)
+            response =  redirect(reverse("goods:index"))
+        else:
+            # 如果是从限制访问页面重定向到登陆页面的，跳转回限制访问页面
+            response =  redirect(next)
+
+        # 清空cookie
+        response.delete_cookie("cart")
+        return response
 
 class ActiveView(View):
     """邮件激活"""
