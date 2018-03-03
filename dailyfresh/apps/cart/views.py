@@ -7,7 +7,100 @@ import re
 import json
 # Create your views here.
 
+class DeleteCartView(View):
+    """删除购物车数据"""
 
+    def post(self, request):
+
+        # 接收参数：sku_id
+        sku_id = request.POST.get('sku_id')
+
+        # 校验参数：not，判断是否为空
+        if not sku_id:
+            return JsonResponse({"code":1, "message": "参数错误"})
+
+        # 判断用户是否登录
+        if request.user.is_authenticated():
+            # 如果用户登陆，删除redis中购物车数据
+            redis_conn = get_redis_connection("default")
+            user_id = request.user.id
+            # 商品不存在会自动忽略，不会产生异常
+            redis_conn.hdel("cart_%s" % user_id, sku_id)
+
+        else:
+            # 如果用户未登陆，删除cookie中购物车数据
+            cart_json = request.COOKIES.get("cart")
+            if cart_json is not None:
+                cart_dict = json.loads(cart_json)
+            # 只进行删除操作，无需定义空字典
+                del cart_dict[sku_id]
+
+                new_cart_json = json.dumps(cart_dict)
+
+                response = JsonResponse({"code":0, "message": "删除购物车数据库成功"})
+                response.set_cookie("cart", new_cart_json)
+
+                return response
+        return JsonResponse({"code":0, "message": "删除购物车数据成功"})
+
+
+
+class UpdateCartView(View):
+    """更新购物车数据"""
+    """购物车页面的更新购物车数据逻辑，可否写成只进行数据计算，离开购物车页面的时候再进行redis及cookie的存储，从而减少存储次数，如果可以，要如何实现呢"""
+
+    def post(self,request):
+
+        # 获取参数：sku_id, count
+        sku_id = request.POST.get("sku_id")
+        count = request.POST.get("count")
+        # 校验参数all()
+        if not all([sku_id, count]):
+            return JsonResponse({"code":1, "message":"参数不全"})
+
+        # 判断商品是否存在
+        try:
+            sku = GoodsSKU.objects.get(id=sku_id)
+        except GoodsSKU.DoesNotExist:
+            return JsonResponse({"code":2, "message":"商品不存在"})
+        # 判断count是否是整数
+        if re.match(r"^\d+$", count.decode()):
+            count = int(count)
+        else:
+            return JsonResponse({"code": 3, "message": "商品count错误"})
+        # 判断库存
+        if count > sku.stock:
+            return JsonResponse({"code": 4, "message":"库存不足"})
+        # 判断用户是否登陆
+        if request.user.is_authenticated():
+            # 如果用户登陆，将修改的购物车数据存储到redis中
+            redis_conn = get_redis_connection("default")
+            user_id = request.user.id
+            # 直接拿着用户发送过来的商品的数量赋值即可 : 因为更新购物车的接口设计成幂等.count就是最终要更新的数据
+            # 不需要判断商品是否存在.不需要累加计算
+            redis_conn.hset("cart_%s" % user_id, sku_id, count)
+
+            return JsonResponse({"code":0, "message": "更新购物车成功"})
+        else:
+            # 如果用户未登陆，将修改的购物车数据存储到cookie中
+            cart_json = request.COOKIES.get("cart")
+            if cart_json is not None:
+                cart_dict = json.loads(cart_json)
+            else:
+                cart_dict = {}
+
+            # 直接拿着用户发送过来的商品的数量赋值即可 : 因为更新购物车的接口设计成幂等.count就是最终要更新的数据
+            # 不需要判断商品是否存在.不需要累加计算
+            cart_dict[sku_id] = count
+
+            new_cart_json = json.dumps(cart_dict)
+
+            # 创建response对象
+            response = JsonResponse({"code":0, "message":"更新购物车成功"})
+            # 写入购物车cookie到浏览器
+            response.set_cookie("cart", new_cart_json)
+
+            return response
 
 
 
