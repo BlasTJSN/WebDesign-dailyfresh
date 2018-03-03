@@ -265,4 +265,6 @@ send_active_email()：内部封装激活邮件内容，并用装饰器@app.task�
 31.3实现未登录时添加购物车视图和模板渲染，购物车数据存储在cookie中
 31.4登陆后将cookie中的数据合并到redis中
 
+31.5封装goods应用下的购物车数量逻辑，定义BaseCartView类视图
+
 

@@ -5,10 +5,46 @@ from django.core.cache import cache
 from django_redis import get_redis_connection
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, EmptyPage
+import json
 
 # Create your views here.
 
-class ListView(View):
+
+class BaseCartView(View):
+    """封装登录和未登陆时购物车数据的读取"""
+
+    def get_cart_num(self, request):
+
+        cart_num = 0
+
+        if request.user.is_authenticated():
+            # 如果是登陆用户，需要查询保存在redis中的购物车数据
+            # 创建连接到redis的对象
+            redis_conn = get_redis_connection("default")
+
+            # 调用hgetall()，查询hash对象中所有的数据,返回字典（字典的key和value是bytes类型）
+            user_id = request.user.id
+            cart_dict = redis_conn.hgetall("cart_%s" % user_id)
+            # 遍历字典，读取商品数量，求和
+            for val in cart_dict.values():
+                cart_num += int(val)
+        else:
+            # 用户未登录时，方顾问商品模块页面，需要读取cookie中的购物车数据
+            cart_json = request.COOKIES.get("cart")
+            if cart_json is not None:
+                cart_dict = json.loads(cart_json)
+            else:
+                cart_dict = {}
+
+            for val in cart_dict.values():
+                cart_num += val
+
+        return cart_num
+
+
+
+
+class ListView(BaseCartView):
     """商品分类列表"""
 
     def get(self, request, category_id, page_num):
@@ -55,13 +91,7 @@ class ListView(View):
         page_list = paginator.page_range
 
         # 购物车
-        cart_num = 0
-        if request.user.is_authenticated():
-            redis_conn = get_redis_connection("default")
-            user_id = request.user.id
-            cart_dict = redis_conn.hgetall("cart_%s" % user_id)
-            for val in cart_dict.values():
-                cart_num += int(val)
+        cart_num = self.get_cart_num(request)
 
         # 构造上下文
         context = {
@@ -77,7 +107,7 @@ class ListView(View):
         # 渲染模板
         return render(request, "list.html", context)
 
-class DetailView(View):
+class DetailView(BaseCartView):
     """商品详细信息页面"""
 
     def get(self, request, sku_id):
@@ -125,7 +155,7 @@ class DetailView(View):
             cache.set("detail_%s" % sku_id, context, 3600)
 
         # 查询购物车信息:目前没有实现,暂时设置成0,不能被缓存
-        cart_num = 0
+        cart_num = self.get_cart_num(request)
 
         # 如果是登陆用户，需要查询保存在redis中的购物车数据
         if request.user.is_authenticated():
@@ -135,11 +165,6 @@ class DetailView(View):
 
             # 调用hgetall()，查询hash对象中所有的数据,返回字典（字典的key和value是bytes类型）
             user_id = request.user.id
-            cart_dict = redis_conn.hgetall("cart_%s" % user_id)
-
-            # 遍历字典，读取商品数量，求和
-            for val in cart_dict.values():
-                cart_num += int(val)
 
             # 浏览记录存储
             # 需要先去重
@@ -155,7 +180,7 @@ class DetailView(View):
         # 渲染模板
         return render(request, 'detail.html', context)
 
-class IndexView(View):
+class IndexView(BaseCartView):
     """首页"""
 
 
@@ -197,23 +222,8 @@ class IndexView(View):
 
                 # 缓存context:缓存的key 要缓存的内容 超时时间
                 cache.set("index_page_data", context, 3600)
-        # 查询购物车信息：目前没有实现，暂设为0
-        cart_num = 0
 
-        # 如果是登陆用户，需要查询保存在redis中的购物车数据
-        if request.user.is_authenticated():
-
-            # 创建连接到redis的对象
-            redis_conn = get_redis_connection("default")
-
-            # 调用hgetall()，查询hash对象中所有的数据,返回字典（字典的key和value是bytes类型）
-            user_id = request.user.id
-            cart_dict = redis_conn.hgetall("cart_%s" % user_id)
-
-            # 遍历字典，读取商品数量，求和
-            for val in cart_dict.values():
-                cart_num += int(val)
-
+        cart_num = self.get_cart_num(request)
         # 更新context
         context.update(cart_num=cart_num)
 
