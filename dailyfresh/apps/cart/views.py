@@ -7,6 +7,67 @@ import re
 import json
 # Create your views here.
 
+class CartInfoView(View):
+    """展示购物车数据"""
+
+    def get(self, request):
+        """查询登陆和未登录的购物车数据，并渲染"""
+
+        if request.user.is_authenticated():
+            # 用户已登录，从redis中查询购物车数据
+            redis_conn = get_redis_connection("default")
+            user_id = request.user.id
+
+            cart_dict = redis_conn.hgetall("cart_%s" % user_id)
+
+        else:
+            # 用户未登录，从cookie中查询购物车数据
+            cart_json = request.COOKIES.get("cart")
+            # json模块读取的cookie中的购物车数据,key是string,而value是int
+            if cart_json is not None:
+                cart_dict = json.loads(cart_json)
+            else:
+                cart_dict = {}
+
+        # 定义要展示的变量
+        skus = []
+        total_count = 0
+        total_sku_amount = 0
+
+        # 遍历所有购物车商品信息，查询商品和count
+        for sku_id, count in cart_dict.items():
+            try:
+                sku = GoodsSKU.objects.get(id=sku_id)
+            except GoodsSKU.DoesNotExist:
+                continue
+
+            # 把count统一转换成int
+            count = int(count)
+            # 计算每种商品总价
+            amount = count*sku.price
+
+            # 动态给sku对象绑定count和amount,不会保存在数据库
+            sku.count = count
+            sku.amount = amount
+            skus.append(sku)
+
+            # 累计金额和数量
+            total_count += count
+            total_sku_amount += amount
+
+        # 构造上下文
+        context = {
+            "skus":skus,
+            "total_count":total_count,
+            "total_sku_amount":total_sku_amount
+        }
+
+        # 渲染模板
+        return render(request, "cart.html", context)
+
+
+
+
 class AddCartView(View):
     """添加购物车"""
 
