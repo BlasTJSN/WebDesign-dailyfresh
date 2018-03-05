@@ -30,6 +30,8 @@ urlpatterns = [
     # 商品模块 主页: http://127.0.0.1:8000/
     url(r'^', include('goods.urls', namespace='goods')),
     # 购物车
-    url(r"^cart/", include("cart.urls", namespace="cart"))
+    url(r"^cart/", include("cart.urls", namespace="cart")),
+    # 订单
+    url(r"^orders", include("orders.urls", namespace="orders"))
 
 ]

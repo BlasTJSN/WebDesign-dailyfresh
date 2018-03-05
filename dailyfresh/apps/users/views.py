@@ -206,8 +206,11 @@ class LoginView(View):
             # 如果是直接登陆成功，重定向到首页
             response =  redirect(reverse("goods:index"))
         else:
-            # 如果是从限制访问页面重定向到登陆页面的，跳转回限制访问页面
-            response =  redirect(next)
+            if next == "orders/place":
+                response = redirect(reverse("cart:info"))
+            else:
+                # 如果是从限制访问页面重定向到登陆页面的，跳转回限制访问页面
+                response =  redirect(next)
 
         # 清空cookie
         response.delete_cookie("cart")
