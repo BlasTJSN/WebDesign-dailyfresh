@@ -295,3 +295,11 @@ send_active_email()：内部封装激活邮件内容，并用装饰器@app.task�
 35.4定义订单状态类视图，实现逻辑，配置url
 35.5定义订单评论类视图，实现逻辑，配置url
 
+36配置uWSGI
+
+37nginx操作
+37.1配置两个uwshi.ini文件
+37.2配置nginx的server
+37.3在settings.py中配置，指定项目静态文件
+收集路径
+

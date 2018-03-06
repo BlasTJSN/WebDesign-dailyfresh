@@ -193,3 +193,6 @@ ALIPAY_APPID = '2016082100308405'
 APP_PRIVATE_KEY_PATH = os.path.join(BASE_DIR, 'apps/orders/app_private_key.pem')
 ALIPAY_PUBLIC_KEY_PATH = os.path.join(BASE_DIR, 'apps/orders/alipay_public_key.pem')
 ALIPAY_URL = 'https://openapi.alipaydev.com/gateway.do'
+
+# 收集静态文件目录
+STATIC_ROOT = '/home/python/Desktop/manageT/dailyfresh/dailyfresh/static'
