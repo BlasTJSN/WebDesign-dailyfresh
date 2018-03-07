@@ -4,6 +4,7 @@
 #### 1.创建dailyfresh项目
 
 #### 2.创建应用cart,goods,orders,users
+- 2.1 安装应用
 
 #### 3.定义模型类
 
@@ -36,22 +37,20 @@
     OrderInfo模型类作为外键，多对一关系
     GoodsSKU模型类作为外键，多对一关系
 
-3.2.cart应用中暂时不定义模型类，其中的数据是使用redis数据库维护的
+- 3.2 cart应用中暂时不定义模型类，其中的数据是使用redis数据库维护的
+- 3.3 基类BaseModel作为工具类，放在/utils/models.py中
+- 3.4 安装itsdangerous模块，用于生成token,邮箱激活使用
+- 3.5 安装django-tinymce模块,用于富文本编辑
 
-3.3 安装itsdangerous模块
+#### 4.增加导包路径
 
-
-5.增加导包路径
-
-5.1.原因：在settings.py中设置AUTH_USER_MODEL时，编码规则为'应用.用户模型类'
-
-5.2.但是，应用在apps/文件目录下，为了保证正确的编码，我们需要增加导包路径
-
-5.3.同时，为了配合AUTH_USER_MODEL的配置，应用的安装直接使用users，不要使用apps.users
-
-5.4.
- import sys
-  sys.path.insert(1, os.path.join(BASE_DIR, 'apps'))
+- 4.1.原因：在settings.py中设置AUTH_USER_MODEL时，编码规则为'应用.用户模型类'
+- 4.2.但是，应用在apps/文件目录下，为了保证正确的编码，我们需要增加导包路径
+- 4.3.同时，为了配合AUTH_USER_MODEL的配置，应用的安装直接使用users，不要使用apps.users
+``` python
+import sys
+sys.path.insert(1, os.path.join(BASE_DIR, 'apps'))
+```
 
 6.URL配置
 
