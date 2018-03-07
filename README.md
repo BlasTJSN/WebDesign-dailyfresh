@@ -79,7 +79,44 @@ sys.path.insert(1, os.path.join(BASE_DIR, 'apps'))
         - 异步发送激活邮件，delay触发异步任务
         - 响应结果
 
+#### 8.实现用户激活
+- 8.1 配置邮件服务器和发件人sender:3393133521@qq.com
+- 8.2 settings.py中配置邮件服务器参数
+``` python
+# 邮件服务器配置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # 导入邮件模块
+EMAIL_HOST = 'smtp.qq.com' # 发邮件主机
+EMAIL_PORT = 587 # 发邮件端口
+EMAIL_HOST_USER = '3393133521@qq.com' # 授权的邮箱
+EMAIL_HOST_PASSWORD = 'ctsvjxbnixsadaaj' # 邮箱授权时获得的密码，非注册登录密码
+EMAIL_FROM = '天天生鲜<3393133521@qq.com>' # 发件人抬头
 
+```
+- 8.3 使用Celery,用于处理异步任务(client,broker,worker)
+    - 8.3.1 安装Celery
+    - 8.3.2 创建Celery异步任务文件/celery_tasks/tasks.py
+    - 8.3.3 发送封装好内容的激活邮件的逻辑的实现
+        - 创建Celery客户端(client)，创建应用对象app,指定broker为redis
+        - app.task装饰器装饰发送激活邮件函数
+        - 定义发送激活邮件函数send_active_email(to_email, user_name, token)
+            - 封装邮件内容
+            - 发送邮件send_mail()
+        - 创建worker
+            - 拷贝项目代码到其他服务器中
+            - 在/celery_tasks/tasks.py文件顶部添加加载Django环境配置的代码
+            - 终端执行命令创建worker
+        - **开启redis-server**
+- 8.4 激活逻辑实现
+    - 8.4.1 定义用户激活类视图，配置url
+    - 8.4.2 处理get请求，接收和处理激活
+        - 创建序列化器，参数和调用dumps方法的相同
+        - 获取token
+            - 判断激活链接是否过期
+        - 读取user_id
+        - 查询要激活的用户
+            - 判断用户是否存在
+        - 重置激活状态为True
+        - 响应结果
 
 11.实现邮件激活
 
