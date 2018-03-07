@@ -151,7 +151,6 @@ CACHES = {
     }
 }
 
-
 # Session
 # http://django-redis-chs.readthedocs.io/zh_CN/latest/#session-backend
 

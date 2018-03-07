@@ -118,48 +118,57 @@ EMAIL_FROM = '天天生鲜<3393133521@qq.com>' # 发件人抬头
         - 重置激活状态为True
         - 响应结果
 
-11.实现邮件激活
+#### 9.实现用户登录
+- 9.1 使用redis数据库缓存session信息
+    - 9.1.1 安装django-redis
+    - 9.1.2 settings.py文件配置django-redis,login()会自动调用SESSION_ENGINE指定的缓存方式（这里使用redis）
+    ``` python
+    # 缓存
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://192.168.90.39:6379/5",
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
 
-11.1定义邮件激活类视图
+    # Session
+    # http://django-redis-chs.readthedocs.io/zh_CN/latest/#session-backend
 
-11.2使用itsdangerous模块生成激活token
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    SESSION_CACHE_ALIAS = "default"
+    ```
+- 9.2实现登录逻辑
+    - 9.2.1 处理post请求，处理登录逻辑
+        - 接收用户登录表单数据user_name,pwd
+        - 对用户进行验证，使用Django用户认证系统
+            - 判断用户是否存在
+            - 判断用户是否激活
+        - 登陆用户login(),将用户状态保持信息存储到redis
+        - 获取勾选记住用户名数据
+        - 判断是否勾选记住用户名
+            - 未勾选，设置状态保持时间为0
+            - 勾选，设置状态保持时间为默认值14天
+        - -----此处为购物车逻辑----- 在页面跳转前，将cookie中的购物车数据添加到redis中
+        - 获取cookies中购物车的数据cart_json
+        - 判断cart_json是否存在
+            - 存在，将数据转换成JSON格式（读取明文，字典格式）
+            - 不存在，定义空字典
+        - 查询redis中购物车数据，得到购物车数据（字典格式）
+        - 遍历cookies中的购物车数据
+            - 判断cookies中的商品在redis中是否存在
+                - 存在，读取redis中购物车商品数量
+                - 合并购物车数量
+                - 查询商品信息，判断购物车数量是否超过库存
+            - 将合并后的数据更新到redis中取出的购物车字典中
+        - 将合并后的数据更新到redis中的购物车数据中
+        - -----此处为购物车逻辑-----
+        - 判断地址是否有next参数
+            - 没有，响应到主页
 
-11.2.1生成用户激活token的方法封装在User模型类中.
 
-Serializer()生成序列化器，传入混淆字符串和过期时间.
-
-dumps()生成user_id加密后的token，传入封装user_id的字典.
-返回token字符串.
-
-loads()解出token字符串，得到用户id明文.
-
-11.3Celery异步发送激活邮件
-
-11.3.0配置邮件服务器和发件人sender
-
-11.3.1创建Celery异步任务文件celery_tasks/tasks.py
-
-11.3.2.创建应用对象/客户端/client
-
-Celery()：
-
-参数1是异步任务路径.
-
-参数2是指定的broker.
-
-redis://密码@redis的ip:端口/数据库.
-
-redis://192.168.243.191:6379/4.
-
-返回客户端应用对象app.
-
-send_active_email()：内部封装激活邮件内容，并用装饰器@app.task注册.
-
-调用python的send_mail()将激活邮件发送出去.
-
-11.3.3将redis数据库作为中间人borker
-
-11.4实现激活逻辑
 
 12.实现登陆逻辑
 
