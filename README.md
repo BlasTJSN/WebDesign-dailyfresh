@@ -1,23 +1,45 @@
 # dailyfresh
 天天生鲜电商项目
 
-1.创建dailyfresh项目
+#### 1.创建dailyfresh项目
 
-2.创建应用cart,goods,orders,users
+#### 2.创建应用cart,goods,orders,users
 
-3.定义模型类
+#### 3.定义模型类
 
-3.1.分别在users、goods、orders应用中定义好对应的模型类
+- 3.1.分别在users、goods、orders应用中定义好对应的模型类
+    - 3.1.1 定义基类BaseModel模型类，作为所有模型类的父类使用，表示所有模型类共有的属性，create_time和update_time字段
+    - 3.1.2 定义User模型类
+    需要继承AbstractUser父类，AbstractUser让模型类User使用Django自带的用户认证系统
+    Django中默认开启用户认证模块中间件
+    定义生成激活令牌方法用于邮件激活操作
+    迁移前，需要在settings.py文件中设置：AUTH_USER_MODEL = '应用.用户模型类',即AUTH_USER_MODEL = 'users.User'
+    - 3.1.3 定义Address模型类，字段包括id,user,receiver_name,receiver_mobile,detail_addr,zip_code
+    User模型类作为外键，多对一的关系
+    - 3.1.4 定义GoodsCategory模型类,表示商品类别，字段包括id,name,logo,image
+    - 3.1.5 定义GoodsCategory模型类，表示商品SPU，字段包括id,name,desc(详细介绍)
+    - 3.1.6 定义GoodsSKU模型类，表示商品SKU，字段包括id,category,goods,name,title,unit,price,stock,sales,default_image,status
+    GoodsCategory模型类作为外键，多对一关系
+    Goods模型类作为外键，多对一关系
+    - 3.1.7 定义GoodsImage模型类，表示商品图片，字段包括id,sku,image
+    GoodsSKU模型类作为外键，多对一关系
+    - 3.1.8 定义IndexGoodsBanner模型类，表示主页轮播商品展示，字段包括id,sku,image,index(轮播顺序)
+    GoodsSKU模型类作为外键，多对一关系
+    - 3.1.9 定义IndexCategoryGoodsBanner模型类，表示主页分类商品展示，字段包括id,category,sku,display_type,index
+    GoodsCategory模型类作为外键，多对一关系
+    GoodsSKU模型类作为外键，多对一关系
+    - 3.1.10 定义IndexPromotionBanner模型类，表示主页促销活动，字段包括id,name,url,image,index
+    - 3.1.11 定义OrderInfo模型类，表示订单信息，字段包括order_id,user,address,total_count,total_amount,trans_cost,pay_method,status,trade_id
+    User模型类作为外键，多对一关系
+    Address模型类作为外键，多对一关系
+    - 3.1.12 定义OrderGoods模型类，表示订单商品，字段包括id,order,sku,count,price,comment
+    OrderInfo模型类作为外键，多对一关系
+    GoodsSKU模型类作为外键，多对一关系
 
 3.2.cart应用中暂时不定义模型类，其中的数据是使用redis数据库维护的
 
 3.3 安装itsdangerous模块
 
-4.User模型
-
-4.1.users应用中的模型类User是使用Django自带的用户认证系统维护的，Django中默认开启用户认证模块中间件
-
-4.2.迁移前，需要在settings.py文件中设置：AUTH_USER_MODEL = '应用.用户模型类',即AUTH_USER_MODEL = 'users.User'
 
 5.增加导包路径
 
