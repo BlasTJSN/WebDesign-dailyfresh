@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../../pythonstudy/Flask_study/.idea/Flask_study.iml" filepath="$PROJECT_DIR$/../../pythonstudy/Flask_study/.idea/Flask_study.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/dailyfresh.iml" filepath="$PROJECT_DIR$/.idea/dailyfresh.iml" />
     </modules>
   </component>
