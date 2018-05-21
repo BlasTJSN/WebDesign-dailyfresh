@@ -1,5 +1,5 @@
 # dailyfresh
-天天生鲜电商项目
+电商项目
 
 #### 1.创建dailyfresh项目
 
